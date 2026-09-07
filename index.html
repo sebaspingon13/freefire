@@ -505,13 +505,19 @@
         const inscripciones = await DataService.obtenerInscripciones();
         state.usuarioEstaConfirmado = false;
 
-        if (inscripciones && state.perfilActual) {
-          inscripciones.forEach(item => {
-            if ((item.j1_apodo === state.perfilActual.nickname && item.j1_pago_confirmado) ||
-                (item.j2_apodo === state.perfilActual.nickname && item.j2_pago_confirmado)) {
+        // Validar si el usuario actual ya está inscrito en alguna casilla (como J1 o J2) usando su user_id único de auth
+        let miCasillaInscrita = null;
+        if (inscripciones && state.usuarioActual) {
+          miCasillaInscrita = inscripciones.find(item => 
+            item.user_id_j1 === state.usuarioActual.id || item.user_id_j2 === state.usuarioActual.id
+          );
+
+          if (miCasillaInscrita) {
+            if ((miCasillaInscrita.user_id_j1 === state.usuarioActual.id && miCasillaInscrita.j1_pago_confirmado) ||
+                (miCasillaInscrita.user_id_j2 === state.usuarioActual.id && miCasillaInscrita.j2_pago_confirmado)) {
               state.usuarioEstaConfirmado = true;
             }
-          });
+          }
         }
 
         const container = document.getElementById('slots-container');
@@ -522,32 +528,41 @@
           const reg = inscripciones ? inscripciones.find(item => item.numero_casilla === i) : null;
           let statusBadge = '<span style="color:#00f2fe;">[Disponible]</span>';
           let playersText = '<i>Slot libre</i>';
-          let actionBtn = `<button class="btn-slot" onclick="App.abrirModalCasilla(${i}, 'CREAR')">Reservar</button>`;
+          let actionBtn = '';
 
-          if (reg) {
-            const esMiCasilla = state.perfilActual && (reg.j1_apodo === state.perfilActual.nickname || reg.j2_apodo === state.perfilActual.nickname);
-            
-            if (reg.j1_apodo && reg.j2_apodo) {
-              statusBadge = '<span style="color:var(--primary);">[Lleno 2/2]</span>';
-              playersText = `<b>${reg.j1_apodo}</b> & <b>${reg.j2_apodo}</b>`;
-              
-              if (esMiCasilla) {
-                actionBtn = `<button class="btn-slot" style="background:var(--yape-light);" onclick="App.verMiCasillaInfo(${i})">Mi Casilla</button>`;
-              } else {
-                actionBtn = `<button class="btn-slot" style="opacity:0.5;" disabled>Ocupado</button>`;
+          if (miCasillaInscrita && miCasillaInscrita.numero_casilla === i) {
+            // Es la casilla de este usuario
+            statusBadge = reg.j2_apodo ? '<span style="color:var(--primary);">[Lleno 2/2]</span>' : `<span style="color:#ffb703;">[1/2 ${reg.pin_casilla ? '🔒' : '🔓'}]</span>`;
+            playersText = reg.j2_apodo ? `<b>${reg.j1_apodo}</b> & <b>${reg.j2_apodo}</b>` : `1. <b>${reg.j1_apodo}</b> | 2. <i>Esperando...</i>`;
+            actionBtn = `<button class="btn-slot" style="background:var(--yape-light);" onclick="App.verMiCasillaInfo(${i})">Mi Casilla</button>`;
+          } else if (miCasillaInscrita) {
+            // El usuario ya tiene una casilla en otra parte, no puede inscribirse en otra
+            if (reg) {
+              if (reg.j1_apodo && reg.j2_apodo) {
+                statusBadge = '<span style="color:var(--primary);">[Lleno 2/2]</span>';
+                playersText = `<b>${reg.j1_apodo}</b> & <b>${reg.j2_apodo}</b>`;
+              } else if (reg.j1_apodo) {
+                statusBadge = `<span style="color:#ffb703;">[1/2 ${reg.pin_casilla ? '🔒' : '🔓'}]</span>`;
+                playersText = `1. <b>${reg.j1_apodo}</b> | 2. <i>Esperando...</i>`;
               }
-
-            } else if (reg.j1_apodo) {
-              const tienePin = reg.pin_casilla && reg.pin_casilla.trim() !== '';
-              statusBadge = `<span style="color:#ffb703;">[1/2 ${tienePin ? '🔒' : '🔓'}]</span>`;
-              playersText = `1. <b>${reg.j1_apodo}</b> | 2. <i>Esperando...</i>`;
-
-              if (esMiCasilla) {
-                actionBtn = `<button class="btn-slot" style="background:var(--yape-light);" onclick="App.verMiCasillaInfo(${i})">Mi Casilla</button>`;
-              } else {
+            }
+            actionBtn = `<button class="btn-slot" style="opacity:0.4;" disabled>Ya inscrito</button>`;
+          } else {
+            // El usuario no tiene ninguna casilla aún
+            if (reg) {
+              if (reg.j1_apodo && reg.j2_apodo) {
+                statusBadge = '<span style="color:var(--primary);">[Lleno 2/2]</span>';
+                playersText = `<b>${reg.j1_apodo}</b> & <b>${reg.j2_apodo}</b>`;
+                actionBtn = `<button class="btn-slot" style="opacity:0.5;" disabled>Ocupado</button>`;
+              } else if (reg.j1_apodo) {
+                const tienePin = reg.pin_casilla && reg.pin_casilla.trim() !== '';
+                statusBadge = `<span style="color:#ffb703;">[1/2 ${tienePin ? '🔒' : '🔓'}]</span>`;
+                playersText = `1. <b>${reg.j1_apodo}</b> | 2. <i>Esperando...</i>`;
                 const pinSeguro = reg.pin_casilla ? reg.pin_casilla.replace(/'/g, "\\'") : '';
                 actionBtn = `<button class="btn-slot" style="background:#00f2fe; color:#000;" onclick="App.abrirModalCasilla(${i}, 'UNIRSE', '${pinSeguro}')">Unirme</button>`;
               }
+            } else {
+              actionBtn = `<button class="btn-slot" onclick="App.abrirModalCasilla(${i}, 'CREAR')">Reservar</button>`;
             }
           }
 
@@ -572,6 +587,16 @@
       },
 
       async abrirModalCasilla(casillaNum, modo, pinReal = '') {
+        // Doble validación en cliente por seguridad antes de abrir formulario
+        const inscripciones = await DataService.obtenerInscripciones();
+        const yaInscrito = inscripciones.find(item => 
+          item.user_id_j1 === state.usuarioActual.id || item.user_id_j2 === state.usuarioActual.id
+        );
+        if (yaInscrito) {
+          alert("⚠️ Ya tienes una casilla registrada con esta cuenta. Solo se permite 1 slot por cuenta.");
+          return this.mostrarSlots();
+        }
+
         document.getElementById('input-casilla-num').value = casillaNum;
         document.getElementById('input-modo').value = modo;
         document.getElementById('yape_nro_op').value = '';
@@ -646,11 +671,22 @@
 
         if (!nroOp) return alert("Ingresa el número de operación.");
 
+        // Validar estrictamente en base de datos antes de insertar o actualizar que la cuenta no tenga otro slot
+        const inscripciones = await DataService.obtenerInscripciones();
+        const yaInscrito = inscripciones.find(item => 
+          item.user_id_j1 === state.usuarioActual.id || item.user_id_j2 === state.usuarioActual.id
+        );
+        if (yaInscrito) {
+          alert("❌ Error: Ya estás registrado en otra casilla con esta cuenta. Solo puedes tener 1 slot.");
+          return this.mostrarSlots();
+        }
+
         if (modo === 'CREAR') {
           const pin = document.getElementById('pin_crear').value;
           const { error } = await DataService.crearInscripcion({
             numero_casilla: casillaNum,
             pin_casilla: pin || null,
+            user_id_j1: state.usuarioActual.id,
             j1_apodo: state.perfilActual.nickname,
             j1_id: state.perfilActual.id_freefire,
             j1_wsp: state.perfilActual.whatsapp,
@@ -666,6 +702,7 @@
             }
           }
           const { error } = await DataService.unirseInscripcion(casillaNum, {
+            user_id_j2: state.usuarioActual.id,
             j2_apodo: state.perfilActual.nickname,
             j2_id: state.perfilActual.id_freefire,
             j2_wsp: state.perfilActual.whatsapp,
