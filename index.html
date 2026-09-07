@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="es"><head>
+<!DOCTYPE html>
+<html lang="es">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Torneo Free Fire - Sistema Completo</title>
@@ -195,7 +197,11 @@
     .badge-paid { background: var(--success); color: #000; }
 
     .hidden { display: none !important; }
-  </style></head><body><div class="container">
+  </style>
+</head>
+<body>
+
+<div class="container">
 
   <!-- VISTA 0: AUTENTICACIÓN -->
   <div id="view-auth">
@@ -311,7 +317,11 @@
       </thead>
       <tbody id="tabla-admin"></tbody>
     </table>
-  </div></div><script>
+  </div>
+
+</div>
+
+<script>
   const SUPABASE_URL = 'https://eaqagfaarjsonclcpahd.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhcWFnZmFhcmpzb25jbGNwYWhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzODc2NDIsImV4cCI6MjEwMzk2MzY0Mn0.-9b9qzfJ4oZANgQdLTy2vYTMbfj1ffiTEVrQY-QSYPs';
 
@@ -562,15 +572,6 @@
       },
 
       async abrirModalCasilla(casillaNum, modo, pinReal = '') {
-        // RESTRICCIÓN: Verificar si esta cuenta (Google/Facebook) ya creó un slot previo
-        if (modo === 'CREAR') {
-          const todasInscripciones = await DataService.obtenerInscripciones();
-          const yaTieneSlot = todasInscripciones.some(item => item.j1_user_id === state.usuarioActual.id);
-          if (yaTieneSlot) {
-            return alert("❌ Ya tienes una casilla creada con esta cuenta. Solo se permite 1 slot por cuenta de Google o Facebook.");
-          }
-        }
-
         document.getElementById('input-casilla-num').value = casillaNum;
         document.getElementById('input-modo').value = modo;
         document.getElementById('yape_nro_op').value = '';
@@ -646,18 +647,10 @@
         if (!nroOp) return alert("Ingresa el número de operación.");
 
         if (modo === 'CREAR') {
-          // Doble verificación previa a insertar
-          const todasInscripciones = await DataService.obtenerInscripciones();
-          const yaTieneSlot = todasInscripciones.some(item => item.j1_user_id === state.usuarioActual.id);
-          if (yaTieneSlot) {
-            return alert("❌ Ya tienes una casilla creada con esta cuenta. Solo se permite 1 slot por cuenta de Google o Facebook.");
-          }
-
           const pin = document.getElementById('pin_crear').value;
           const { error } = await DataService.crearInscripcion({
             numero_casilla: casillaNum,
             pin_casilla: pin || null,
-            j1_user_id: state.usuarioActual.id, // Guardamos el ID único de la cuenta
             j1_apodo: state.perfilActual.nickname,
             j1_id: state.perfilActual.id_freefire,
             j1_wsp: state.perfilActual.whatsapp,
@@ -780,4 +773,7 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     App.init();
-  });</script></body></html>
+  });
+</script>
+</body>
+</html>
