@@ -202,9 +202,7 @@
 <body>
 
 <!-- REPRODUCTOR DE MÚSICA DE FONDO -->
-<audio id="bg-music" loop>
-    <source src="freefire.mp3" type="audio/mpeg">
-</audio>
+<audio id="bg-music"></audio>
 
 <button id="btn-audio-toggle" type="button" onclick="App.toggleMusica()" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; width: auto; padding: 10px 14px; font-size: 14px; background: rgba(181, 55, 242, 0.85); border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); cursor: pointer; color: white; border: 1px solid var(--primary-light);">
     🔊 Música On
@@ -345,8 +343,12 @@
       usuarioEstaConfirmado: false,
       salaInfoActual: { id: '', pass: '' },
       pinTempValidacion: '',
-      reproduciendoMusica: true
+      reproduciendoMusica: true,
+      cancionActualIndex: -1
     };
+
+    // Tus 4 canciones directas en la misma carpeta
+    const listaCanciones = ['freefire1.mp3', 'freefire2.mp3', 'freefire3.mp3', 'freefire4.mp3'];
 
     const Views = {
       ocultarTodas() {
@@ -397,16 +399,22 @@
 
     return {
       init() {
-        // Intento de reproducción automática al cargar la página por defecto prendida
         const audio = document.getElementById('bg-music');
         const btn = document.getElementById('btn-audio-toggle');
-        audio.volume = 0.5; // Volumen al 50% para que no sature
-        
+        audio.volume = 0.5;
+
+        // Cuando termina una canción, reproduce otra distinta aleatoriamente
+        audio.addEventListener('ended', () => {
+          this.reproducirSiguienteCancionAleatoria();
+        });
+
+        // Reproduce la primera canción aleatoria al entrar
+        this.reproducirSiguienteCancionAleatoria();
+
         audio.play().then(() => {
           state.reproduciendoMusica = true;
           btn.innerText = '🔊 Música On';
         }).catch(() => {
-          // Si el navegador lo bloquea, se activará en cuanto el usuario haga clic por primera vez en cualquier parte
           state.reproduciendoMusica = false;
           btn.innerText = '🔇 Música Off';
           
@@ -433,6 +441,24 @@
             this.comprobarEstado();
           }
         });
+      },
+
+      reproducirSiguienteCancionAleatoria() {
+        const audio = document.getElementById('bg-music');
+        let indicesDisponibles = [];
+        
+        for (let i = 0; i < listaCanciones.length; i++) {
+          if (i !== state.cancionActualIndex) {
+            indicesDisponibles.push(i);
+          }
+        }
+
+        const randomIndex = Math.floor(Math.random() * indicesDisponibles.length);
+        state.cancionActualIndex = indicesDisponibles[randomIndex];
+
+        audio.src = listaCanciones[state.cancionActualIndex];
+        audio.load();
+        audio.play().catch(err => console.log("Esperando interacción para reproducir:", err));
       },
 
       toggleMusica() {
