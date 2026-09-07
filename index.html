@@ -201,6 +201,15 @@
 </head>
 <body>
 
+<!-- REPRODUCTOR DE MÚSICA DE FONDO -->
+<audio id="bg-music" loop>
+    <source src="freefire.mp3" type="audio/mpeg">
+</audio>
+
+<button id="btn-audio-toggle" type="button" onclick="App.toggleMusica()" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; width: auto; padding: 10px 14px; font-size: 14px; background: rgba(181, 55, 242, 0.85); border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); cursor: pointer; color: white; border: 1px solid var(--primary-light);">
+    🔊 Música On
+</button>
+
 <div class="container">
 
   <!-- VISTA 0: AUTENTICACIÓN -->
@@ -325,22 +334,20 @@
   const SUPABASE_URL = 'https://eaqagfaarjsonclcpahd.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhcWFnZmFhcmpzb25jbGNwYWhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzODc2NDIsImV4cCI6MjEwMzk2MzY0Mn0.-9b9qzfJ4oZANgQdLTy2vYTMbfj1ffiTEVrQY-QSYPs';
 
-  // Master Controller / Core Engine Pattern (Modular State Architecture)
   const App = (() => {
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const TOTAL_CASILLAS = 24;
 
-    // Estado centralizado encapsulado
     let state = {
       usuarioActual: null,
       perfilActual: null,
       numeroYapeActual: '930263051',
       usuarioEstaConfirmado: false,
       salaInfoActual: { id: '', pass: '' },
-      pinTempValidacion: ''
+      pinTempValidacion: '',
+      reproduciendoMusica: false
     };
 
-    // Capa de Enrutamiento de Vistas Modular e Independiente
     const Views = {
       ocultarTodas() {
         ['view-auth', 'view-profile', 'view-slots', 'view-form-casilla', 'view-login', 'view-admin'].forEach(id => {
@@ -355,7 +362,6 @@
       }
     };
 
-    // Capa de Procesamiento de Datos Supabase (Master Gateway)
     const DataService = {
       async obtenerPerfil(userId) {
         const { data, error } = await db.from('perfiles').select('*').eq('id', userId).maybeSingle();
@@ -389,9 +395,34 @@
       }
     };
 
-    // Acciones y Lógica de Negocio
     return {
       init() {
+        // Intento de reproducción automática al cargar la página
+        const audio = document.getElementById('bg-music');
+        const btn = document.getElementById('btn-audio-toggle');
+        audio.volume = 0.5; // Volumen al 50% para que no sature
+        
+        audio.play().then(() => {
+          state.reproduciendoMusica = true;
+          btn.innerText = '🔊 Música On';
+        }).catch(() => {
+          // Si el navegador lo bloquea, se activará en cuanto el usuario haga clic por primera vez en cualquier parte
+          state.reproduciendoMusica = false;
+          btn.innerText = '🔇 Música Off';
+          
+          const desbloquearAudio = () => {
+            audio.play().then(() => {
+              state.reproduciendoMusica = true;
+              btn.innerText = '🔊 Música On';
+              document.removeEventListener('click', desbloquearAudio);
+              document.removeEventListener('keydown', desbloquearAudio);
+            }).catch(e => console.log(e));
+          };
+          
+          document.addEventListener('click', desbloquearAudio);
+          document.addEventListener('keydown', desbloquearAudio);
+        });
+
         db.auth.onAuthStateChange(async (event, session) => {
           if (session) {
             state.usuarioActual = session.user;
@@ -402,36 +433,24 @@
             this.comprobarEstado();
           }
         });
+      },
 
-        // ==========================================
-        // ESCUCHADOR EN TIEMPO REAL (REALTIME)
-        // ==========================================
-        db.channel('torneo-realtime')
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'inscripciones' },
-            (payload) => {
-              const viewSlots = document.getElementById('view-slots');
-              if (viewSlots && !viewSlots.classList.contains('hidden')) {
-                this.mostrarSlots();
-              }
-              const viewAdmin = document.getElementById('view-admin');
-              if (viewAdmin && !viewAdmin.classList.contains('hidden')) {
-                this.cargarAdmin();
-              }
-            }
-          )
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'configuracion_admin' },
-            (payload) => {
-              const viewSlots = document.getElementById('view-slots');
-              if (viewSlots && !viewSlots.classList.contains('hidden')) {
-                this.mostrarSlots();
-              }
-            }
-          )
-          .subscribe();
+      toggleMusica() {
+        const audio = document.getElementById('bg-music');
+        const btn = document.getElementById('btn-audio-toggle');
+        
+        if (state.reproduciendoMusica) {
+          audio.pause();
+          btn.innerText = '🔇 Música Off';
+          state.reproduciendoMusica = false;
+        } else {
+          audio.play().then(() => {
+            btn.innerText = '🔊 Música On';
+            state.reproduciendoMusica = true;
+          }).catch(err => {
+            console.log("Error al reproducir:", err);
+          });
+        }
       },
 
       comprobarEstado() {
