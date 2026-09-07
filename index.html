@@ -345,7 +345,7 @@
       usuarioEstaConfirmado: false,
       salaInfoActual: { id: '', pass: '' },
       pinTempValidacion: '',
-      reproduciendoMusica: false
+      reproduciendoMusica: true
     };
 
     const Views = {
@@ -397,7 +397,7 @@
 
     return {
       init() {
-        // Intento de reproducción automática al cargar la página
+        // Intento de reproducción automática al cargar la página por defecto prendida
         const audio = document.getElementById('bg-music');
         const btn = document.getElementById('btn-audio-toggle');
         audio.volume = 0.5; // Volumen al 50% para que no sature
