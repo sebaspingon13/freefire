@@ -402,6 +402,36 @@
             this.comprobarEstado();
           }
         });
+
+        // ==========================================
+        // ESCUCHADOR EN TIEMPO REAL (REALTIME)
+        // ==========================================
+        db.channel('torneo-realtime')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'inscripciones' },
+            (payload) => {
+              const viewSlots = document.getElementById('view-slots');
+              if (viewSlots && !viewSlots.classList.contains('hidden')) {
+                this.mostrarSlots();
+              }
+              const viewAdmin = document.getElementById('view-admin');
+              if (viewAdmin && !viewAdmin.classList.contains('hidden')) {
+                this.cargarAdmin();
+              }
+            }
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'configuracion_admin' },
+            (payload) => {
+              const viewSlots = document.getElementById('view-slots');
+              if (viewSlots && !viewSlots.classList.contains('hidden')) {
+                this.mostrarSlots();
+              }
+            }
+          )
+          .subscribe();
       },
 
       comprobarEstado() {
