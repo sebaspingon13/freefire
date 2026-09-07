@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Torneo Free Fire - Sistema Completo</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Rajdhani:wght@500;600;700&display=swap');
+
+    :root {
+      --bg: #0b0e14;
+      --card-bg: rgba(18, 22, 33, 0.95);
+      --primary: #ff4655;
+      --yape: #742284;
+      --yape-light: #a32dbb;
+      --text: #ffffff;
+      --subtext: #8e9aaf;
+      --border: rgba(255, 255, 255, 0.08);
+      --success: #00f2fe;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Rajdhani', sans-serif;
+      background: radial-gradient(circle at top, #1a1f2c 0%, #080a0f 100%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 20px 15px;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 620px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(255, 70, 85, 0.15);
+      border: 1px solid rgba(255, 70, 85, 0.2);
+    }
+
+    h1 {
+      font-family: 'Teko', sans-serif;
+      text-align: center;
+      color: var(--primary);
+      font-size: 42px;
+      margin: 0;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      line-height: 1;
+    }
+
+    .author-tag {
+      text-align: center;
+      font-family: 'Teko', sans-serif;
+      color: #ffffff;
+      font-size: 18px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 15px;
+      opacity: 0.9;
+    }
+
+    h2 { font-family: 'Teko', sans-serif; text-align: center; color: #fff; font-size: 30px; margin: 0 0 10px; }
+    .subtitle { text-align: center; color: var(--subtext); font-size: 13px; margin-bottom: 20px; }
+
+    .user-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 10px 14px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border: 1px solid var(--border);
+    }
+
+    label { display: block; margin-bottom: 6px; font-size: 12px; color: var(--subtext); font-weight: 700; }
+    input, select {
+      width: 100%; padding: 12px; margin-bottom: 14px;
+      background: rgba(8, 10, 15, 0.8); border: 1px solid var(--border);
+      color: white; border-radius: 8px; font-family: 'Rajdhani', sans-serif;
+    }
+
+    button {
+      width: 100%; padding: 12px; background: linear-gradient(135deg, #ff4655 0%, #c82333 100%);
+      border: none; color: white; font-family: 'Teko', sans-serif; font-size: 20px;
+      border-radius: 8px; cursor: pointer; text-transform: uppercase;
+    }
+
+    .btn-google { background: #ea4335; margin-bottom: 10px; }
+    .btn-facebook { background: #1877f2; margin-bottom: 10px; }
+    .btn-sec { background: transparent; border: 1px solid var(--border); color: var(--subtext); margin-top: 10px; font-size: 16px; }
+    .btn-small { width: auto; padding: 4px 10px; font-size: 14px; border-radius: 6px; }
+
+    .yape-box {
+      background: linear-gradient(135deg, rgba(116, 34, 132, 0.35) 0%, rgba(163, 45, 187, 0.2) 100%);
+      border: 1px solid var(--yape-light);
+      border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 15px;
+    }
+    .yape-title { color: #d175ed; font-family: 'Teko', sans-serif; font-size: 26px; margin: 0; }
+    .yape-number { font-size: 28px; font-weight: 700; color: #fff; margin: 6px 0; letter-spacing: 1px; }
+
+    .btn-yape-directo {
+      background: linear-gradient(135deg, #742284 0%, #a32dbb 100%);
+      color: #fff; font-family: 'Teko', sans-serif; font-size: 22px;
+      margin: 10px 0; text-decoration: none; display: block;
+      padding: 10px; border-radius: 8px; border: 1px solid #d175ed; width: 100%;
+      cursor: pointer;
+    }
+
+    .slots-grid { display: flex; flex-direction: column; gap: 10px; max-height: 55vh; overflow-y: auto; padding-right: 4px; }
+    .slot-card {
+      background: rgba(10, 13, 20, 0.8); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .slot-num { font-family: 'Teko', sans-serif; font-size: 20px; color: #fff; }
+    .slot-players { font-size: 13px; color: var(--subtext); }
+    .btn-slot { width: auto; padding: 6px 14px; font-size: 15px; }
+
+    .admin-card {
+      background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;
+      margin-bottom: 15px; border: 1px solid var(--border);
+    }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+    th, td { padding: 8px; border-bottom: 1px solid var(--border); text-align: left; }
+    .status-badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+    .badge-pending { background: #ffb703; color: #000; }
+    .badge-paid { background: #00f2fe; color: #000; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- VISTA 0: AUTENTICACIÓN -->
+  <div id="view-auth">
+    <h1>Torneo Duos Free Fire</h1>
+    <div class="author-tag">De Markus y Sebas</div>
+    <p class="subtitle">Inicia sesión con tu cuenta para acceder</p>
+    <button class="btn-google" onclick="App.loginSocial('google')">Continuar con Google</button>
+    <button class="btn-facebook" onclick="App.loginSocial('facebook')">Continuar con Facebook</button>
+    <button class="btn-sec" onclick="App.toggleAdminLogin()">Acceso Administrador</button>
+  </div>
+
+  <!-- VISTA 1: EDITAR / CREAR PERFIL -->
+  <div id="view-profile" class="hidden">
+    <h2 id="profile-title">Ficha del Jugador</h2>
+    <p class="subtitle">Ingresa tus datos personales obligatorios</p>
+    <form id="form-perfil" onsubmit="App.guardarPerfil(event)">
+      <label>NICKNAME DE FREE FIRE</label>
+      <input type="text" id="prof_nickname" required placeholder="Ej: Shadow99">
+
+      <label>ID DE FREE FIRE</label>
+      <input type="text" id="prof_id" required placeholder="Ej: 987654321">
+
+      <label>WHATSAPP DE CONTACTO</label>
+      <input type="text" id="prof_wsp" required placeholder="Ej: 987654321">
+
+      <button type="submit">GUARDAR MI PERFIL</button>
+    </form>
+    <button id="btn-cancel-profile" class="btn-sec hidden" onclick="App.mostrarSlots()">Cancelar y Volver</button>
+  </div>
+
+  <!-- VISTA 2: TABLERO DE CASILLAS -->
+  <div id="view-slots" class="hidden">
+    <h1>Torneo Duos Free Fire</h1>
+    <div class="author-tag">De Markus y Sebas</div>
+
+    <div class="user-bar">
+      <span>Hola, <b id="user-nickname-display">-</b></span>
+      <div>
+        <button class="btn-small" onclick="App.abrirFormularioEditar()" style="background:#2d3748;">✏️ Perfil</button>
+        <button class="btn-small" onclick="App.cerrarSesion()" style="background:#1a202c;">Salir</button>
+      </div>
+    </div>
+
+    <p class="subtitle">Selecciona tu casilla para registrarte o ver tus datos de la sala</p>
+    <div id="slots-container" class="slots-grid">Cargando casillas...</div>
+  </div>
+
+  <!-- VISTA 3: INSCRIPCIÓN Y PAGO YAPE -->
+  <div id="view-form-casilla" class="hidden">
+    <h2 id="casilla-form-title">Reservar Casilla</h2>
+    
+    <div class="yape-box">
+      <div class="yape-title">MÉTODO DE PAGO YAPE</div>
+      <div class="yape-number" id="yape-num-display">📱 +51 930 263 051</div>
+      <div style="font-size:16px;">Titular: <b id="yape-owner-display">Sebas</b></div>
+
+      <button id="btn-abrir-yape" class="btn-yape-directo" type="button" onclick="App.ejecutarPagoYape()">📋 COPIAR NÚMERO YAPE</button>
+    </div>
+
+    <form id="form-casilla-accion" onsubmit="App.procesarInscripcion(event)">
+      <input type="hidden" id="input-casilla-num">
+      <input type="hidden" id="input-modo">
+
+      <div id="field-pin-crear">
+        <label>PIN DE CASILLA (4 DÍGITOS - OPCIONAL)</label>
+        <input type="password" id="pin_crear" maxlength="4" pattern="\d{4}" placeholder="Ej: 1234">
+      </div>
+
+      <div id="field-pin-validar" class="hidden">
+        <label>INGRESA EL PIN DE TU COMPAÑERO</label>
+        <input type="password" id="pin_validar" maxlength="4" pattern="\d{4}" placeholder="PIN secreto">
+      </div>
+
+      <label>NÚMERO DE OPERACIÓN</label>
+      <input type="text" id="yape_nro_op" required placeholder="Ej: 0548921">
+
+      <button type="submit">CONFIRMAR MI INSCRIPCIÓN</button>
+    </form>
+    <button class="btn-sec" onclick="App.mostrarSlots()">Volver atrás</button>
+  </div>
+
+  <!-- VISTA 4: LOGIN ADMIN -->
+  <div id="view-login" class="hidden">
+    <h2>Acceso Administrador</h2>
+    <input type="email" id="admin-email" placeholder="Correo electrónico">
+    <input type="password" id="admin-password" placeholder="Contraseña">
+    <button onclick="App.loginAdmin()">INICIAR SESIÓN</button>
+    <button class="btn-sec" onclick="App.comprobarEstado()">Volver</button>
+  </div>
+
+  <!-- VISTA 5: PANEL ADMIN -->
+  <div id="view-admin" class="hidden">
+    <h2>Panel de Administración</h2>
+
+    <div class="admin-card">
+      <label>DATOS DE LA SALA DE FREE FIRE:</label>
+      <input type="text" id="admin-room-id" placeholder="ID de la Sala (Déjalo vacío si aún no hay)">
+      <input type="text" id="admin-room-pass" placeholder="Contraseña de la Sala (Déjalo vacío)">
+      <button onclick="App.actualizarDatosSala()" style="background:#00f2fe; color:#000;" type="button">ACTUALIZAR SALA EN VIVO</button>
+    </div>
+
+    <button onclick="App.logoutAdmin()" style="background:#232736; margin-bottom:15px;">CERRAR SESIÓN ADMIN</button>
+    
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Jugadores</th>
+          <th>N° Operación</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-admin"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://eaqagfaarjsonclcpahd.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVhcWFnZmFhcmpzb25jbGNwYWhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzODc2NDIsImV4cCI6MjEwMzk2MzY0Mn0.-9b9qzfJ4oZANgQdLTy2vYTMbfj1ffiTEVrQY-QSYPs';
+
+  // Master Controller / Core Engine Pattern (Modular State Architecture)
+  const App = (() => {
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const TOTAL_CASILLAS = 24;
+
+    // Estado centralizado encapsulado
+    let state = {
+      usuarioActual: null,
+      perfilActual: null,
+      numeroYapeActual: '930263051',
+      usuarioEstaConfirmado: false,
+      salaInfoActual: { id: '', pass: '' },
+      pinTempValidacion: ''
+    };
+
+    // Capa de Enrutamiento de Vistas Modular e Independiente
+    const Views = {
+      ocultarTodas() {
+        ['view-auth', 'view-profile', 'view-slots', 'view-form-casilla', 'view-login', 'view-admin'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.add('hidden');
+        });
+      },
+      mostrar(vistaId) {
+        this.ocultarTodas();
+        const el = document.getElementById(vistaId);
+        if (el) el.classList.remove('hidden');
+      }
+    };
+
+    // Capa de Procesamiento de Datos Supabase (Master Gateway)
+    const DataService = {
+      async obtenerPerfil(userId) {
+        const { data, error } = await db.from('perfiles').select('*').eq('id', userId).maybeSingle();
+        return { data, error };
+      },
+      async guardarPerfil(perfilData) {
+        return await db.from('perfiles').upsert([perfilData]);
+      },
+      async obtenerConfiguracion() {
+        const { data } = await db.from('configuracion_admin').select('*').eq('id', 1).maybeSingle();
+        return data;
+      },
+      async obtenerInscripciones() {
+        const { data } = await db.from('inscripciones').select('*');
+        return data || [];
+      },
+      async actualizarConfigSala(room_id, room_pass) {
+        return await db.from('configuracion_admin').update({ room_id, room_pass }).eq('id', 1);
+      },
+      async crearInscripcion(payload) {
+        return await db.from('inscripciones').insert([payload]);
+      },
+      async unirseInscripcion(casillaNum, payload) {
+        return await db.from('inscripciones').update(payload).eq('numero_casilla', casillaNum);
+      },
+      async actualizarPago(id, campoPago) {
+        return await db.from('inscripciones').update(campoPago).eq('id', id).select();
+      },
+      async eliminarCasilla(id) {
+        return await db.from('inscripciones').delete().eq('id', id);
+      }
+    };
+
+    // Acciones y Lógica de Negocio
+    return {
+      init() {
+        db.auth.onAuthStateChange(async (event, session) => {
+          if (session) {
+            state.usuarioActual = session.user;
+            await this.cargarPerfilUsuario();
+          } else {
+            state.usuarioActual = null;
+            state.perfilActual = null;
+            this.comprobarEstado();
+          }
+        });
+      },
+
+      comprobarEstado() {
+        if (state.usuarioActual) {
+          this.cargarPerfilUsuario();
+        } else {
+          Views.mostrar('view-auth');
+        }
+      },
+
+      async cargarPerfilUsuario() {
+        if (!state.usuarioActual) return;
+        const { data } = await DataService.obtenerPerfil(state.usuarioActual.id);
+        if (data) {
+          state.perfilActual = data;
+          const nickDisplay = document.getElementById('user-nickname-display');
+          if (nickDisplay) nickDisplay.innerText = data.nickname;
+          this.mostrarSlots();
+        } else {
+          this.abrirFormularioCrear();
+        }
+      },
+
+      async loginSocial(provider) {
+        const options = { redirectTo: window.location.href };
+        if (provider === 'google') options.queryParams = { prompt: 'select_account' };
+        const { error } = await db.auth.signInWithOAuth({ provider, options });
+        if (error) alert("Error: " + error.message);
+      },
+
+      abrirFormularioCrear() {
+        document.getElementById('profile-title').innerText = "Ficha del Jugador";
+        document.getElementById('prof_nickname').value = '';
+        document.getElementById('prof_id').value = '';
+        document.getElementById('prof_wsp').value = '';
+        document.getElementById('btn-cancel-profile').classList.add('hidden');
+        Views.mostrar('view-profile');
+      },
+
+      abrirFormularioEditar() {
+        if (!state.perfilActual) return;
+        document.getElementById('profile-title').innerText = "Editar Perfil";
+        document.getElementById('prof_nickname').value = state.perfilActual.nickname || '';
+        document.getElementById('prof_id').value = state.perfilActual.id_freefire || '';
+        document.getElementById('prof_wsp').value = state.perfilActual.whatsapp || '';
+        document.getElementById('btn-cancel-profile').classList.remove('hidden');
+        Views.mostrar('view-profile');
+      },
+
+      async guardarPerfil(e) {
+        e.preventDefault();
+        const nickname = document.getElementById('prof_nickname').value.trim();
+        const id_freefire = document.getElementById('prof_id').value.trim();
+        const whatsapp = document.getElementById('prof_wsp').value.trim();
+
+        const { error } = await DataService.guardarPerfil({ id: state.usuarioActual.id, nickname, id_freefire, whatsapp });
+        if (error) return alert("Error: " + error.message);
+        alert("¡Perfil actualizado con éxito!");
+        await this.cargarPerfilUsuario();
+      },
+
+      async mostrarSlots() {
+        Views.mostrar('view-slots');
+        
+        const config = await DataService.obtenerConfiguracion();
+        if (config) {
+          state.salaInfoActual.id = config.room_id || 'Por definir';
+          state.salaInfoActual.pass = config.room_pass || 'Por definir';
+        }
+
+        const inscripciones = await DataService.obtenerInscripciones();
+        state.usuarioEstaConfirmado = false;
+
+        if (inscripciones && state.perfilActual) {
+          inscripciones.forEach(item => {
+            if ((item.j1_apodo === state.perfilActual.nickname && item.j1_pago_confirmado) ||
+                (item.j2_apodo === state.perfilActual.nickname && item.j2_pago_confirmado)) {
+              state.usuarioEstaConfirmado = true;
+            }
+          });
+        }
+
+        const container = document.getElementById('slots-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        for (let i = 1; i <= TOTAL_CASILLAS; i++) {
+          const reg = inscripciones ? inscripciones.find(item => item.numero_casilla === i) : null;
+          let statusBadge = '<span style="color:#00f2fe;">[Disponible]</span>';
+          let playersText = '<i>Slot libre</i>';
+          let actionBtn = `<button class="btn-slot" onclick="App.abrirModalCasilla(${i}, 'CREAR')">Reservar</button>`;
+
+          if (reg) {
+            const esMiCasilla = state.perfilActual && (reg.j1_apodo === state.perfilActual.nickname || reg.j2_apodo === state.perfilActual.nickname);
+            
+            if (reg.j1_apodo && reg.j2_apodo) {
+              statusBadge = '<span style="color:var(--primary);">[Lleno 2/2]</span>';
+              playersText = `<b>${reg.j1_apodo}</b> & <b>${reg.j2_apodo}</b>`;
+              
+              if (esMiCasilla) {
+                actionBtn = `<button class="btn-slot" style="background:var(--yape-light);" onclick="App.verMiCasillaInfo(${i})">Mi Casilla</button>`;
+              } else {
+                actionBtn = `<button class="btn-slot" style="opacity:0.5;" disabled>Ocupado</button>`;
+              }
+
+            } else if (reg.j1_apodo) {
+              const tienePin = reg.pin_casilla && reg.pin_casilla.trim() !== '';
+              statusBadge = `<span style="color:#ffb703;">[1/2 ${tienePin ? '🔒' : '🔓'}]</span>`;
+              playersText = `1. <b>${reg.j1_apodo}</b> | 2. <i>Esperando...</i>`;
+
+              if (esMiCasilla) {
+                actionBtn = `<button class="btn-slot" style="background:var(--yape-light);" onclick="App.verMiCasillaInfo(${i})">Mi Casilla</button>`;
+              } else {
+                const pinSeguro = reg.pin_casilla ? reg.pin_casilla.replace(/'/g, "\\'") : '';
+                actionBtn = `<button class="btn-slot" style="background:#00f2fe; color:#000;" onclick="App.abrirModalCasilla(${i}, 'UNIRSE', '${pinSeguro}')">Unirme</button>`;
+              }
+            }
+          }
+
+          container.innerHTML += `
+            <div class="slot-card">
+              <div>
+                <div class="slot-num">SLOT #${i} ${statusBadge}</div>
+                <div class="slot-players">${playersText}</div>
+              </div>
+              ${actionBtn}
+            </div>
+          `;
+        }
+      },
+
+      verMiCasillaInfo(casillaNum) {
+        if (state.usuarioEstaConfirmado && state.salaInfoActual.id && state.salaInfoActual.id !== 'Por definir') {
+          alert(`📌 CASILLA #${casillaNum} CONFIRMADA\n\nsala : ${state.salaInfoActual.id}\ncontraseña : ${state.salaInfoActual.pass}\n\n¡Mucha suerte en tu partida!`);
+        } else {
+          alert(`📌 CASILLA #${casillaNum}\n\nTu pago aún está pendiente de aprobación por el administrador o la sala no ha sido configurada.`);
+        }
+      },
+
+      async abrirModalCasilla(casillaNum, modo, pinReal = '') {
+        document.getElementById('input-casilla-num').value = casillaNum;
+        document.getElementById('input-modo').value = modo;
+        document.getElementById('yape_nro_op').value = '';
+
+        const config = await DataService.obtenerConfiguracion();
+        let titularActivo = 'Sebas';
+        if (config) {
+          titularActivo = config.yape_titular_1 || 'Sebas';
+          state.numeroYapeActual = config.yape_num_1 || '930263051';
+          document.getElementById('yape-num-display').innerText = '📱 +51 ' + state.numeroYapeActual;
+          document.getElementById('yape-owner-display').innerText = titularActivo;
+        } else {
+          state.numeroYapeActual = '930263051';
+          document.getElementById('yape-num-display').innerText = '📱 +51 930263051';
+          document.getElementById('yape-owner-display').innerText = 'Sebas';
+        }
+
+        if (modo === 'CREAR') {
+          document.getElementById('casilla-form-title').innerText = `Reservar Casilla #${casillaNum}`;
+          document.getElementById('field-pin-crear').classList.remove('hidden');
+          document.getElementById('field-pin-validar').classList.add('hidden');
+          document.getElementById('pin_crear').value = '';
+        } else {
+          document.getElementById('casilla-form-title').innerText = `Unirse a Casilla #${casillaNum}`;
+          document.getElementById('field-pin-crear').classList.add('hidden');
+          state.pinTempValidacion = pinReal;
+          if (pinReal && pinReal.trim() !== '') {
+            document.getElementById('field-pin-validar').classList.remove('hidden');
+            document.getElementById('pin_validar').value = '';
+          } else {
+            document.getElementById('field-pin-validar').classList.add('hidden');
+          }
+        }
+
+        Views.mostrar('view-form-casilla');
+      },
+
+      ejecutarPagoYape() {
+        if (!state.numeroYapeActual) state.numeroYapeActual = '930263051';
+        const numeroLimpio = state.numeroYapeActual.replace(/\D/g, '');
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(numeroLimpio).then(() => {
+            alert("✅ Número +51 " + numeroLimpio + " copiado al portapapeles.");
+          }).catch(() => {
+            this.fallbackCopyTextToClipboard(numeroLimpio);
+          });
+        } else {
+          this.fallbackCopyTextToClipboard(numeroLimpio);
+        }
+      },
+
+      fallbackCopyTextToClipboard(text) {
+        const tempInput = document.createElement('input');
+        tempInput.value = text;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        try {
+          document.execCommand('copy');
+          alert("✅ Número +51 " + text + " copiado al portapapeles.");
+        } catch (err) {
+          alert("No se pudo copiar automáticamente.");
+        }
+        document.body.removeChild(tempInput);
+      },
+
+      async procesarInscripcion(e) {
+        e.preventDefault();
+        const casillaNum = parseInt(document.getElementById('input-casilla-num').value);
+        const modo = document.getElementById('input-modo').value;
+        const nroOp = document.getElementById('yape_nro_op').value.trim();
+
+        if (!nroOp) return alert("Ingresa el número de operación.");
+
+        if (modo === 'CREAR') {
+          const pin = document.getElementById('pin_crear').value;
+          const { error } = await DataService.crearInscripcion({
+            numero_casilla: casillaNum,
+            pin_casilla: pin || null,
+            j1_apodo: state.perfilActual.nickname,
+            j1_id: state.perfilActual.id_freefire,
+            j1_wsp: state.perfilActual.whatsapp,
+            j1_nro_operacion: nroOp,
+            j1_pago_confirmado: false
+          });
+          if (error) return alert("Error al registrar: " + error.message);
+        } else {
+          if (state.pinTempValidacion && state.pinTempValidacion.trim() !== '') {
+            const pinIngresado = document.getElementById('pin_validar').value;
+            if (pinIngresado !== state.pinTempValidacion) {
+              return alert("❌ PIN incorrecto.");
+            }
+          }
+          const { error } = await DataService.unirseInscripcion(casillaNum, {
+            j2_apodo: state.perfilActual.nickname,
+            j2_id: state.perfilActual.id_freefire,
+            j2_wsp: state.perfilActual.whatsapp,
+            j2_nro_operacion: nroOp,
+            j2_pago_confirmado: false
+          });
+          if (error) return alert("Error al registrar: " + error.message);
+        }
+
+        alert(`📢 ¡INSCRIPCIÓN REGISTRADA!\n\nCasilla #${casillaNum} registrada con éxito. El administrador confirmará tu operación.`);
+        this.mostrarSlots();
+      },
+
+      toggleAdminLogin() {
+        Views.mostrar('view-login');
+      },
+
+      async loginAdmin() {
+        const email = document.getElementById('admin-email').value;
+        const password = document.getElementById('admin-password').value;
+        const { error } = await db.auth.signInWithPassword({ email, password });
+        if (error) return alert("Error: " + error.message);
+
+        Views.mostrar('view-admin');
+        this.cargarAdmin();
+      },
+
+      async cargarAdmin() {
+        const config = await DataService.obtenerConfiguracion();
+        if (config) {
+          document.getElementById('admin-room-id').value = (config.room_id === 'Por definir') ? '' : (config.room_id || '');
+          document.getElementById('admin-room-pass').value = (config.room_pass === 'Por definir') ? '' : (config.room_pass || '');
+        }
+
+        const data = await DataService.obtenerInscripciones();
+        data.sort((a, b) => a.numero_casilla - b.numero_casilla);
+
+        const tbody = document.getElementById('tabla-admin');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        data.forEach(item => {
+          const j1Estado = item.j1_pago_confirmado ? '<span class="status-badge badge-paid">APROBADO</span>' : '<span class="status-badge badge-pending">PENDIENTE</span>';
+          const j2Estado = item.j2_apodo ? (item.j2_pago_confirmado ? '<span class="status-badge badge-paid">APROBADO</span>' : '<span class="status-badge badge-pending">PENDIENTE</span>') : '-';
+
+          tbody.innerHTML += `
+            <tr>
+              <td><b>#${item.numero_casilla}</b></td>
+              <td>J1: ${item.j1_apodo}<br>J2: ${item.j2_apodo || '-'}</td>
+              <td><small>J1: ${item.j1_nro_operacion || '-'}<br>J2: ${item.j2_nro_operacion || '-'}</small></td>
+              <td>J1: ${j1Estado}<br>J2: ${j2Estado}</td>
+              <td>
+                <button type="button" onclick="App.confirmarPago(${item.id}, 1)" style="background:#00f2fe; color:#000; padding:2px 4px; font-size:10px; margin-bottom:2px;">Aprobar J1</button>
+                ${item.j2_apodo ? `<button type="button" onclick="App.confirmarPago(${item.id}, 2)" style="background:#00f2fe; color:#000; padding:2px 4px; font-size:10px; margin-bottom:2px;">Aprobar J2</button>` : ''}
+                <button type="button" onclick="App.borrarCasilla(${item.id})" style="background:#d9534f; padding:2px 4px; font-size:10px;">Liberar</button>
+              </td>
+            </tr>
+          `;
+        });
+      },
+
+      async actualizarDatosSala() {
+        const room_id = document.getElementById('admin-room-id').value.trim() || 'Por definir';
+        const room_pass = document.getElementById('admin-room-pass').value.trim() || 'Por definir';
+
+        const { error } = await DataService.actualizarConfigSala(room_id, room_pass);
+        if (error) return alert("Error al actualizar sala: " + error.message);
+        alert("✅ Datos de la Sala actualizados correctamente.");
+        this.cargarAdmin();
+      },
+
+      async confirmarPago(id, jugadorNum) {
+        const updateData = jugadorNum === 1 ? { j1_pago_confirmado: true } : { j2_pago_confirmado: true };
+        const { error } = await DataService.actualizarPago(id, updateData);
+
+        if (error) {
+          alert("❌ Error al aprobar: " + error.message);
+        } else {
+          alert("✅ Usuario confirmado correctamente.");
+          this.cargarAdmin();
+        }
+      },
+
+      async borrarCasilla(id) {
+        if (confirm("¿Liberar casilla completamente?")) {
+          await DataService.eliminarCasilla(id);
+          this.cargarAdmin();
+        }
+      },
+
+      async cerrarSesion() {
+        await db.auth.signOut();
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = window.location.origin + window.location.pathname;
+      },
+
+      async logoutAdmin() {
+        await db.auth.signOut();
+        localStorage.clear();
+        window.location.reload();
+      }
+    };
+  })();
+
+  document.addEventListener('DOMContentLoaded', () => {
+    App.init();
+  });
+</script>
+</body>
+</html>
