@@ -9,15 +9,17 @@
     @import url('https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Rajdhani:wght@500;600;700&display=swap');
 
     :root {
-      --bg: #0b0e14;
-      --card-bg: rgba(18, 22, 33, 0.95);
-      --primary: #ff4655;
+      --bg: #050308;
+      --card-bg: rgba(16, 10, 24, 0.92);
+      --primary: #b537f2;
+      --primary-light: #d68bff;
+      --primary-dark: #6d1b9e;
       --yape: #742284;
       --yape-light: #a32dbb;
       --text: #ffffff;
-      --subtext: #8e9aaf;
-      --border: rgba(255, 255, 255, 0.08);
-      --success: #00f2fe;
+      --subtext: #a99cc2;
+      --border: rgba(181, 55, 242, 0.18);
+      --success: #00f2c3;
     }
 
     * { box-sizing: border-box; }
@@ -25,114 +27,174 @@
     body {
       margin: 0;
       font-family: 'Rajdhani', sans-serif;
-      background: radial-gradient(circle at top, #1a1f2c 0%, #080a0f 100%);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(181, 55, 242, 0.16) 0%, transparent 45%),
+        radial-gradient(circle at 85% 100%, rgba(109, 27, 158, 0.18) 0%, transparent 50%),
+        radial-gradient(circle at top, #170c22 0%, #020103 70%);
+      background-attachment: fixed;
       color: var(--text);
       display: flex;
       justify-content: center;
       padding: 20px 15px;
       min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(181, 55, 242, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(181, 55, 242, 0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
     }
 
     .container {
       width: 100%;
       max-width: 620px;
       background: var(--card-bg);
-      backdrop-filter: blur(12px);
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.8), 0 0 15px rgba(255, 70, 85, 0.15);
-      border: 1px solid rgba(255, 70, 85, 0.2);
+      backdrop-filter: blur(16px);
+      padding: 26px;
+      border-radius: 20px;
+      box-shadow:
+        0 0 0 1px rgba(181, 55, 242, 0.12),
+        0 20px 60px rgba(0, 0, 0, 0.85),
+        0 0 40px rgba(181, 55, 242, 0.18);
+      border: 1px solid rgba(181, 55, 242, 0.35);
+      position: relative;
+      z-index: 1;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: -1px; right: -1px;
+      height: 3px;
+      border-radius: 20px 20px 0 0;
+      background: linear-gradient(90deg, transparent, var(--primary), var(--primary-light), var(--primary), transparent);
     }
 
     h1 {
       font-family: 'Teko', sans-serif;
       text-align: center;
-      color: var(--primary);
-      font-size: 42px;
+      color: var(--primary-light);
+      font-size: 44px;
       margin: 0;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
       text-transform: uppercase;
       line-height: 1;
+      text-shadow: 0 0 18px rgba(181, 55, 242, 0.55), 0 0 4px rgba(214, 139, 255, 0.6);
     }
 
     .author-tag {
       text-align: center;
       font-family: 'Teko', sans-serif;
-      color: #ffffff;
+      color: var(--primary-light);
       font-size: 18px;
-      letter-spacing: 2px;
+      letter-spacing: 3px;
       text-transform: uppercase;
       margin-bottom: 15px;
       opacity: 0.9;
+      position: relative;
     }
 
-    h2 { font-family: 'Teko', sans-serif; text-align: center; color: #fff; font-size: 30px; margin: 0 0 10px; }
+    .author-tag::before, .author-tag::after {
+      content: '◆';
+      color: var(--primary);
+      font-size: 9px;
+      margin: 0 8px;
+      vertical-align: middle;
+    }
+
+    h2 { font-family: 'Teko', sans-serif; text-align: center; color: #fff; font-size: 30px; margin: 0 0 10px; letter-spacing: 1px; text-transform: uppercase; }
     .subtitle { text-align: center; color: var(--subtext); font-size: 13px; margin-bottom: 20px; }
 
     .user-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(255, 255, 255, 0.05);
+      background: linear-gradient(135deg, rgba(181, 55, 242, 0.12), rgba(20, 10, 30, 0.4));
       padding: 10px 14px;
-      border-radius: 8px;
+      border-radius: 10px;
       margin-bottom: 15px;
       border: 1px solid var(--border);
     }
 
-    label { display: block; margin-bottom: 6px; font-size: 12px; color: var(--subtext); font-weight: 700; }
+    label { display: block; margin-bottom: 6px; font-size: 12px; color: var(--subtext); font-weight: 700; letter-spacing: 0.5px; }
     input, select {
       width: 100%; padding: 12px; margin-bottom: 14px;
-      background: rgba(8, 10, 15, 0.8); border: 1px solid var(--border);
-      color: white; border-radius: 8px; font-family: 'Rajdhani', sans-serif;
+      background: rgba(5, 3, 8, 0.85); border: 1px solid var(--border);
+      color: white; border-radius: 10px; font-family: 'Rajdhani', sans-serif;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(181, 55, 242, 0.2);
     }
 
     button {
-      width: 100%; padding: 12px; background: linear-gradient(135deg, #ff4655 0%, #c82333 100%);
+      width: 100%; padding: 12px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
       border: none; color: white; font-family: 'Teko', sans-serif; font-size: 20px;
-      border-radius: 8px; cursor: pointer; text-transform: uppercase;
+      border-radius: 10px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+      box-shadow: 0 4px 18px rgba(181, 55, 242, 0.35);
+      transition: transform 0.15s, box-shadow 0.15s;
     }
+    button:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(181, 55, 242, 0.5); }
+    button:active { transform: translateY(0); }
 
-    .btn-google { background: #ea4335; margin-bottom: 10px; }
-    .btn-facebook { background: #1877f2; margin-bottom: 10px; }
-    .btn-sec { background: transparent; border: 1px solid var(--border); color: var(--subtext); margin-top: 10px; font-size: 16px; }
+    .btn-google { background: #ea4335; margin-bottom: 10px; box-shadow: none; }
+    .btn-facebook { background: #1877f2; margin-bottom: 10px; box-shadow: none; }
+    .btn-sec { background: transparent; border: 1px solid var(--border); color: var(--subtext); margin-top: 10px; font-size: 16px; box-shadow: none; }
     .btn-small { width: auto; padding: 4px 10px; font-size: 14px; border-radius: 6px; }
 
     .yape-box {
-      background: linear-gradient(135deg, rgba(116, 34, 132, 0.35) 0%, rgba(163, 45, 187, 0.2) 100%);
+      background: linear-gradient(135deg, rgba(116, 34, 132, 0.4) 0%, rgba(163, 45, 187, 0.15) 100%);
       border: 1px solid var(--yape-light);
-      border-radius: 12px; padding: 16px; text-align: center; margin-bottom: 15px;
+      border-radius: 14px; padding: 18px; text-align: center; margin-bottom: 15px;
+      box-shadow: inset 0 0 25px rgba(163, 45, 187, 0.12);
     }
-    .yape-title { color: #d175ed; font-family: 'Teko', sans-serif; font-size: 26px; margin: 0; }
+    .yape-title { color: #d175ed; font-family: 'Teko', sans-serif; font-size: 26px; margin: 0; letter-spacing: 1px; }
     .yape-number { font-size: 28px; font-weight: 700; color: #fff; margin: 6px 0; letter-spacing: 1px; }
 
     .btn-yape-directo {
       background: linear-gradient(135deg, #742284 0%, #a32dbb 100%);
       color: #fff; font-family: 'Teko', sans-serif; font-size: 22px;
       margin: 10px 0; text-decoration: none; display: block;
-      padding: 10px; border-radius: 8px; border: 1px solid #d175ed; width: 100%;
+      padding: 10px; border-radius: 10px; border: 1px solid #d175ed; width: 100%;
       cursor: pointer;
     }
 
     .slots-grid { display: flex; flex-direction: column; gap: 10px; max-height: 55vh; overflow-y: auto; padding-right: 4px; }
+    .slots-grid::-webkit-scrollbar { width: 6px; }
+    .slots-grid::-webkit-scrollbar-thumb { background: var(--primary-dark); border-radius: 6px; }
     .slot-card {
-      background: rgba(10, 13, 20, 0.8); border: 1px solid var(--border);
-      border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;
+      background: linear-gradient(135deg, rgba(20, 10, 30, 0.85), rgba(8, 4, 12, 0.85));
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;
+      transition: border-color 0.2s;
     }
-    .slot-num { font-family: 'Teko', sans-serif; font-size: 20px; color: #fff; }
+    .slot-card:hover { border-color: rgba(181, 55, 242, 0.5); }
+    .slot-num { font-family: 'Teko', sans-serif; font-size: 20px; color: #fff; letter-spacing: 1px; }
     .slot-players { font-size: 13px; color: var(--subtext); }
     .btn-slot { width: auto; padding: 6px 14px; font-size: 15px; }
 
     .admin-card {
-      background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px;
+      background: linear-gradient(135deg, rgba(181, 55, 242, 0.08), rgba(255, 255, 255, 0.03));
+      padding: 14px; border-radius: 10px;
       margin-bottom: 15px; border: 1px solid var(--border);
     }
     
     table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
     th, td { padding: 8px; border-bottom: 1px solid var(--border); text-align: left; }
+    th { color: var(--primary-light); text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
     .status-badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
     .badge-pending { background: #ffb703; color: #000; }
-    .badge-paid { background: #00f2fe; color: #000; }
+    .badge-paid { background: var(--success); color: #000; }
 
     .hidden { display: none !important; }
   </style>
@@ -144,7 +206,7 @@
   <!-- VISTA 0: AUTENTICACIÓN -->
   <div id="view-auth">
     <h1>Torneo Duos Free Fire</h1>
-    <div class="author-tag">De Markus y Sebas</div>
+    <div class="author-tag">De Jeff y Sebas</div>
     <p class="subtitle">Inicia sesión con tu cuenta para acceder</p>
     <button class="btn-google" onclick="App.loginSocial('google')">Continuar con Google</button>
     <button class="btn-facebook" onclick="App.loginSocial('facebook')">Continuar con Facebook</button>
@@ -173,7 +235,7 @@
   <!-- VISTA 2: TABLERO DE CASILLAS -->
   <div id="view-slots" class="hidden">
     <h1>Torneo Duos Free Fire</h1>
-    <div class="author-tag">De Markus y Sebas</div>
+    <div class="author-tag">De Jeff y Sebas</div>
 
     <div class="user-bar">
       <span>Hola, <b id="user-nickname-display">-</b></span>
